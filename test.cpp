@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <vector>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -90,6 +91,15 @@ public:
         centerOutput("Health Status: " + health_status);
     }
 
+    void display1()
+    {
+        centerOutput("------------------------");
+        centerOutput("Animal ID: " + animalid);
+        centerOutput("Name: " + name);
+        // centerOutput("Species: " + species);
+        // centerOutput("Age: " + age);
+        // centerOutput("Health Status: " + health_status);
+    }
     void getName()
     {
         name = centerInput("Enter Animal Name:       ");
@@ -147,6 +157,70 @@ public:
             cout << "Error: Unable to open file for reading." << endl;
         }
     }
+
+    void loadFromFile1()
+    {
+        int countVeg = 0;
+        int countNonVeg = 0;
+
+        // Vectors to store animal details
+        vector<string> vegAnimals, nonVegAnimals;
+
+        ifstream inFile("animal_data.txt");
+        if (inFile.is_open())
+        {
+            while (getline(inFile, animalid, ',') &&
+                   getline(inFile, name, ',') &&
+                   getline(inFile, species, ',') &&
+                   getline(inFile, age, ',') &&
+                   getline(inFile, health_status))
+            {
+                // Display details based on species
+                if (species == "veg")
+                {
+                    vegAnimals.push_back("Animal ID:" + animalid + "---Animal Name:" + name);
+                    display1();
+                    countVeg++;
+                }
+                else if (species == "nonveg")
+                {
+                    nonVegAnimals.push_back("Animal ID:" + animalid + "---Animal Name:" + name);
+                    display1();
+                    countNonVeg++;
+                }
+            }
+
+            // Display the total count of animals
+            string totalVegAnimals = to_string(countVeg);
+            string totalNonVegAnimals = to_string(countNonVeg);
+            string totalAnimals = to_string(countVeg + countNonVeg);
+
+            centerOutput("------------------------");
+            centerOutput("TOTAL VEGETARIAN ANIMALS: " + totalVegAnimals);
+            centerOutput("TOTAL NON-VEGETARIAN ANIMALS: " + totalNonVegAnimals);
+            centerOutput("TOTAL ANIMALS: " + totalAnimals);
+
+            // Display Veg Animals
+            centerOutput("Vegetarian Animals:");
+            for (const string &vegAnimal : vegAnimals)
+            {
+                centerOutput(vegAnimal);
+            }
+
+            // Display Non-Veg Animals
+            centerOutput("Non-Vegetarian Animals:");
+            for (const string &nonVegAnimal : nonVegAnimals)
+            {
+                centerOutput(nonVegAnimal);
+            }
+
+            inFile.close();
+        }
+        else
+        {
+            cout << "Error: Unable to open file for reading." << endl;
+        }
+    }
 };
 
 class Feeding
@@ -161,6 +235,8 @@ public:
     string FoodCost;
     double TotalCost;
     string i;
+    double cost1;
+    double ct; // = 0.0;
 
 public:
     string getFeedingId()
@@ -290,6 +366,119 @@ public:
         // If the animal ID is not found, return a default value
         return 0.0;
     }
+
+    void calculateFeedingCost()
+    {
+        ifstream inFile("feeding_data.txt");
+        if (inFile.is_open())
+        {
+            double totalCost = 0.0;
+            string currentAnimalId;
+
+            while (getline(inFile, FeedingId, ',') &&
+                   getline(inFile, AnimalId, ',') &&
+                   getline(inFile, FoodType, ',') &&
+                   getline(inFile, Quantity, ',') &&
+                   getline(inFile, FeedingTime, ',') &&
+                   getline(inFile, FeedingDate, ',') &&
+                   getline(inFile, FoodCost))
+            {
+                if (currentAnimalId.empty())
+                {
+                    currentAnimalId = AnimalId;
+                }
+
+                // If a new animal is encountered, display total cost and reset
+                if (currentAnimalId != AnimalId)
+                {
+                    centerOutput("-------------------------");
+                    centerOutput("Total Feeding Cost for Animal ID " + currentAnimalId + ": $" + to_string(totalCost));
+                    centerOutput("-------------------------");
+
+                    // Update the cost1 field for the current animal
+                    cost1 = totalCost;
+
+                    // Reset for the new animal
+                    currentAnimalId = AnimalId;
+                    totalCost = 0.0;
+                }
+
+                // Calculate and accumulate the total cost
+                totalCost += stod(Quantity) * stod(FoodCost);
+                ct = ct + totalCost;
+            }
+
+            // Display the last animal's total cost
+            centerOutput("-------------------------");
+            centerOutput("Total Feeding Cost for Animal ID " + currentAnimalId + ": $" + to_string(totalCost));
+            centerOutput("-------------------------");
+
+            // Update the cost1 field for the last animal
+            cost1 = totalCost;
+
+            inFile.close();
+        }
+
+        // centerOutput("The Total Animal Cost of per day:" + to_string(ct));
+        else
+        {
+            cout << "Error: Unable to open file for reading." << endl;
+        }
+        centerOutput("The Total Animal Cost of per day:" + to_string(ct));
+        // centerOutput("DO YOU WANT TO CALCULATE TOTAL COST OF ANY AMOUNT OF DATE(y/n):");
+        string awer = centerInput("DO YOU WANT TO CALCULATE TOTAL COST OF ANY AMOUNT OF DATE(y/n):");
+        if (awer == "y")
+        {
+            string countdate = centerInput("Enter the Amount of date:       ");
+            double dc = stod(countdate) * ct;
+            centerOutput("The Total Animal Cost of" + countdate + "days=" + to_string(dc));
+        }
+    }
+    int budget() // double ct
+    {
+        double bgt = 100000;
+        double finalbgt = 0.0;
+        double dcd = 0.0;
+        // double upbgt; // Remove this line
+
+        centerOutput("             The Total Budget of the :" + to_string(bgt));
+
+        // string t = centerInput("Do You Want To Update The Budget(y/n) :");
+        // if (t == "y")
+        // {
+        //     string upbgt = centerInput("Enter the adding amount:       ");
+        //     bgt += stod(upbgt);
+        //     centerOutput("The Total Budget of the :" + to_string(bgt));
+        // }
+
+        if (centerInput("               Do You Want To Update The Budget(y/n) :") == "y")
+        {
+            string upbgt = centerInput("       Enter the adding amount:       ");
+            bgt += stod(upbgt);
+            centerOutput("             The Total Budget of the :" + to_string(bgt));
+        }
+
+        string AnS = centerInput("                       Do You Want to see budget after some days(y/n):");
+        if (AnS == "y")
+        {
+            string cd = centerInput("                Enter the how much days after budget:  ");
+            dcd = stod(cd) * ct;
+
+            finalbgt = bgt - dcd;
+            centerOutput("How Much budget Will Be Left After " + cd + " Days= " + to_string(finalbgt));
+            // centerOutput("Because the calculated cost is " + to_string(finalbgt));
+        }
+        return finalbgt;
+    }
+
+    // void displayWithCost()
+    // {
+    //     // display(); // Display basic details
+
+    //     // Display feeding cost
+    //     // centerOutput("Feeding Cost: $" + to_string(cost1));
+    //     // centerOutput("-------------------------");
+    // }
 };
 
 int main()
@@ -311,9 +500,12 @@ int main()
         centerOutput("1. Add Animal            ");
         centerOutput("2. Feed Animal           ");
         centerOutput("3. Display Animal Details");
-        centerOutput("  4. Display Feeding Details");
-        centerOutput("5. Total Food Cost:     ");
-        centerOutput("6. Exit                  ");
+        centerOutput(" 4. Display Feeding Details");
+        centerOutput("                   5. Total Food Cost(for single Animal):     ");
+        centerOutput("                       6. Display Each animal cost And Total cost:     ");
+        centerOutput("                7. Display all Animal and count Animals:");
+        centerOutput("8.budget:               ");
+        centerOutput("9. Exit                  ");
 
         // Get user input
         string userInput = centerInput("Enter your choice:       ");
@@ -384,10 +576,19 @@ int main()
                 break;
             case 6:
                 // Code to be executed for option 5
+                // a.loadFromFile1();
+                f.calculateFeedingCost(); // Calculate and display feeding cost
+                // f.displayWithCost();
+                break;
+            case 9:
+                a.loadFromFile1();
+                break;
+            case 8:
                 centerOutput("You selected: Exit        ");
                 exit(0);
+            case 7:
+                f.budget(); // f.ct
                 break;
-
             default:
                 // Code to be executed if the choice is invalid
                 centerOutput("   Invalid choice. Please enter a valid option.");
